@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <a href="https://railway.com/template/YOUR_TEMPLATE_ID">
+  <a href="https://railway.com/deploy/HO9Crd?referralCode=KqbI8c&utm_medium=integration&utm_source=template&utm_campaign=generic">
     <img src="https://railway.com/button.svg" alt="Deploy on Railway" />
   </a>
 </p>
@@ -66,7 +66,7 @@ This template deploys [Hermes Agent](https://github.com/NousResearch/hermes-agen
 Click the "Deploy on Railway" button above, or go to:
 
 ```
-https://railway.com/template/YOUR_TEMPLATE_ID
+https://railway.com/deploy/HO9Crd?referralCode=KqbI8c&utm_medium=integration&utm_source=template&utm_campaign=generic
 ```
 
 You'll be prompted to fill in:
@@ -259,11 +259,7 @@ If you wish to use an OpenAI-compatible provider (like **OpenRouter**, **DeepSee
 
 ### Step 9: Add Deploy Button to README
 
-Replace `YOUR_TEMPLATE_ID` in this README with the actual template ID from Railway:
-
-```markdown
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template/YOUR_TEMPLATE_ID)
-```
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/HO9Crd?referralCode=KqbI8c&utm_medium=integration&utm_source=template&utm_campaign=generic)
 
 ---
 
