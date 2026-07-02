@@ -1,0 +1,147 @@
+# =============================================================================
+# Hermes Agent + Honcho — Local Development Docker Compose
+# =============================================================================
+#
+# Usage:
+#   cp .env.example .env        # edit with your API keys
+#   docker compose up -d --build
+#
+# Services:
+#   - hermes     → Web UI (port 3000)
+#   - honcho-api → Honcho API server (port 8000)
+#   - deriver    → Honcho background worker
+#   - postgres   → PostgreSQL with pgvector
+#   - redis      → Redis cache
+#
+# =============================================================================
+
+services:
+  # --------------------------------------------------------------------------
+  # PostgreSQL with pgvector extension
+  # --------------------------------------------------------------------------
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: honcho-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-honcho}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # Redis
+  # --------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: honcho-redis
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # Honcho API Server
+  # --------------------------------------------------------------------------
+  honcho-api:
+    build:
+      context: ./honcho
+      dockerfile: Dockerfile
+    container_name: honcho-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      HONCHO_MODE: api
+      PORT: "8000"
+      WORKERS: "1"
+      LOG_LEVEL: "info"
+      # Database
+      DB_CONNECTION_URI: "postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-honcho}"
+      # Cache
+      CACHE_URL: "redis://redis:6379/0?suppress=true"
+      CACHE_ENABLED: "true"
+      # Auth (disabled for local dev)
+      AUTH_USE_AUTH: "false"
+      # LLM Provider
+      LLM_OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      LLM_ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      LLM_GEMINI_API_KEY: "${GOOGLE_API_KEY:-}"
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # Honcho Deriver (Background Worker)
+  # --------------------------------------------------------------------------
+  deriver:
+    build:
+      context: ./honcho
+      dockerfile: Dockerfile
+    container_name: honcho-deriver
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      honcho-api:
+        condition: service_healthy
+    environment:
+      HONCHO_MODE: deriver
+      # Database
+      DB_CONNECTION_URI: "postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-honcho}"
+      # Cache
+      CACHE_URL: "redis://redis:6379/0?suppress=true"
+      CACHE_ENABLED: "true"
+      # Auth
+      AUTH_USE_AUTH: "false"
+      # LLM Provider
+      LLM_OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      LLM_ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      LLM_GEMINI_API_KEY: "${GOOGLE_API_KEY:-}"
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # Hermes Agent — Web UI
+  # --------------------------------------------------------------------------
+  hermes:
+    build:
+      context: ./hermes
+      dockerfile: Dockerfile
+    container_name: hermes-agent
+    depends_on:
+      honcho-api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      PORT: "3000"
+      # Honcho connection (internal Docker network)
+      HONCHO_BASE_URL: "http://honcho-api:8000"
+      HONCHO_APP_NAME: "hermes-local"
+      # LLM Provider
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      GOOGLE_API_KEY: "${GOOGLE_API_KEY:-}"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:

@@ -1,0 +1,4 @@
+# Hermes Agent Configuration
+# Memory provider: Honcho (self-hosted)
+memory:
+  provider: honcho
