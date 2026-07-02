@@ -234,18 +234,19 @@ HONCHO_BASE_URL=http://${{honcho-api.RAILWAY_PRIVATE_DOMAIN}}:8000
 OPENAI_API_KEY=${{honcho-api.LLM_OPENAI_API_KEY}}
 
 # (Optional) If you use an OpenAI-compatible provider (e.g., OpenRouter, DeepSeek, local vLLM)
+# Default is https://api.openai.com/v1 if left empty
 # OPENAI_BASE_URL=https://openrouter.ai/api/v1
 ```
 
 ### Step 7: Configure Custom LLM Base URL (Optional)
 
-If you wish to use an OpenAI-compatible provider (like **OpenRouter**, **DeepSeek**, or **Together AI**), add these environment variables:
+If you wish to use an OpenAI-compatible provider (like **OpenRouter**, **DeepSeek**, or **Together AI**) instead of the default OpenAI endpoint (`https://api.openai.com/v1`), add these environment variables:
 
 1. **For Hermes Agent** (`hermes` service):
-   - Add `OPENAI_BASE_URL` = (e.g., `https://api.deepseek.com/v1` or `https://openrouter.ai/api/v1`)
+   - Add `OPENAI_BASE_URL` = (e.g., `https://api.deepseek.com/v1` or `https://openrouter.ai/api/v1`. Defaults to `https://api.openai.com/v1` if not set)
 2. **For Honcho** (`honcho-api` and `honcho-deriver` services):
-   - Add `DERIVER_MODEL_CONFIG__OVERRIDES__BASE_URL` = (your custom provider URL)
-   - Add `EMBEDDING_MODEL_CONFIG__OVERRIDES__BASE_URL` = (your custom embedding provider URL, if different)
+   - Add `DERIVER_MODEL_CONFIG__OVERRIDES__BASE_URL` = (your custom provider URL. Defaults to `https://api.openai.com/v1` if not set)
+   - Add `EMBEDDING_MODEL_CONFIG__OVERRIDES__BASE_URL` = (your custom embedding provider URL. Defaults to `https://api.openai.com/v1` if not set)
    - Add `EMBEDDING_MODEL_CONFIG__MODEL` = (e.g. `text-embedding-3-small` or equivalent on your custom provider)
 
 ### Step 8: Publish the Template
