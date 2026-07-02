@@ -230,18 +230,33 @@ LLM_OPENAI_API_KEY=${{honcho-api.LLM_OPENAI_API_KEY}}
 # Honcho connection (internal Railway networking)
 HONCHO_BASE_URL=http://${{honcho-api.RAILWAY_PRIVATE_DOMAIN}}:8000
 
-# LLM Provider (user must fill in)
-OPENAI_API_KEY=  # REQUIRED — ask user to fill in
+# LLM Provider (automatically reuses API key from honcho-api)
+OPENAI_API_KEY=${{honcho-api.LLM_OPENAI_API_KEY}}
+
+# (Optional) If you use an OpenAI-compatible provider (e.g., OpenRouter, DeepSeek, local vLLM)
+# OPENAI_BASE_URL=https://openrouter.ai/api/v1
 ```
 
-### Step 7: Publish the Template
+### Step 7: Configure Custom LLM Base URL (Optional)
 
-1. Review all services and environment variables
-2. Mark `OPENAI_API_KEY` and `LLM_OPENAI_API_KEY` as **required** variables
+If you wish to use an OpenAI-compatible provider (like **OpenRouter**, **DeepSeek**, or **Together AI**), add these environment variables:
+
+1. **For Hermes Agent** (`hermes` service):
+   - Add `OPENAI_BASE_URL` = (e.g., `https://api.deepseek.com/v1` or `https://openrouter.ai/api/v1`)
+2. **For Honcho** (`honcho-api` and `honcho-deriver` services):
+   - Add `DERIVER_MODEL_CONFIG__OVERRIDES__BASE_URL` = (your custom provider URL)
+   - Add `EMBEDDING_MODEL_CONFIG__OVERRIDES__BASE_URL` = (your custom embedding provider URL, if different)
+   - Add `EMBEDDING_MODEL_CONFIG__MODEL` = (e.g. `text-embedding-3-small` or equivalent on your custom provider)
+
+### Step 8: Publish the Template
+
+1. Review all services and environment variables.
+2. In the template settings, mark **`LLM_OPENAI_API_KEY`** on the `honcho-api` service as **Required**. 
+   *Note: Because we referenced this variable (`${{honcho-api.LLM_OPENAI_API_KEY}}`) in the other services, the user deploying the template will only be prompted to enter this key **once**.*
 3. Click **Publish Template**
 4. Copy the template URL
 
-### Step 8: Add Deploy Button to README
+### Step 9: Add Deploy Button to README
 
 Replace `YOUR_TEMPLATE_ID` in this README with the actual template ID from Railway:
 
