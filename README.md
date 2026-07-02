@@ -166,9 +166,9 @@ docker compose down -v     # Stop services AND delete data
 
 1. Click **+ Add Service** → **GitHub Repo**
 2. Select this repository: `kalix-vn/hermes-agent-with-honcho`
-3. **Settings**:
-   - **Root Directory**: `honcho`
-   - **Builder**: Dockerfile
+3. Click on the newly created service to open its settings, then configure:
+   - **Root Directory** (under Settings -> General): Set to `honcho`
+   - *Note: Railway will automatically detect the `Dockerfile` inside the `honcho` directory. If it doesn't, you can verify/set this in **Settings** → **Build** → **Builder** to `Dockerfile`.*
 4. **Environment Variables**:
 
 ```bash
@@ -193,9 +193,9 @@ LLM_OPENAI_API_KEY=  # REQUIRED — ask user to fill in
 
 1. Click **+ Add Service** → **GitHub Repo**
 2. Select this repository: `kalix-vn/hermes-agent-with-honcho`
-3. **Settings**:
+3. Configure the settings for this service:
    - **Root Directory**: `honcho`
-   - **Builder**: Dockerfile
+   - *Note: Ensure the Builder is detected as `Dockerfile` under Settings → Build.*
 4. **Environment Variables**:
 
 ```bash
@@ -220,10 +220,10 @@ LLM_OPENAI_API_KEY=${{honcho-api.LLM_OPENAI_API_KEY}}
 
 1. Click **+ Add Service** → **GitHub Repo**
 2. Select this repository: `kalix-vn/hermes-agent-with-honcho`
-3. **Settings**:
+3. Configure settings:
    - **Root Directory**: `hermes`
-   - **Builder**: Dockerfile
-   - **Generate Domain**: Yes (this is the public-facing service)
+   - *Note: Ensure the Builder is detected as `Dockerfile` under Settings → Build.*
+   - **Public Domain** (under Settings -> Networking): Click **Generate Domain** (this exposes the chat interface to the web)
 4. **Environment Variables**:
 
 ```bash
