@@ -20,13 +20,14 @@ RUN apt-get update && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
-# Install dependencies using uv (cached layer)
-RUN --mount=type=cache,id=uv,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project --no-group dev
+# Install dependencies using uv.
+# NOTE: no BuildKit `--mount=type=cache` here — Railway's Metal builder rejects
+# cache mounts unless the id carries its proprietary cacheKey prefix. Plain
+# layer caching still applies, so this only costs a little on cold builds.
+RUN uv sync --frozen --no-install-project --no-group dev
 
 # Install the project itself
-RUN --mount=type=cache,id=uv,target=/root/.cache/uv \
-    uv sync --frozen --no-group dev
+RUN uv sync --frozen --no-group dev
 
 # --------------- Runtime stage ---------------
 FROM python:3.13-slim-bookworm
