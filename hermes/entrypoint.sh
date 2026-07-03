@@ -1,45 +1,69 @@
 #!/bin/sh
+# =============================================================================
+# Hermes Agent — Railway/Compose start script
+# =============================================================================
+# Runs as the non-root `hermes` user, launched by the official image's
+# main-wrapper (s6-overlay). At this point:
+#   - the Python venv is activated (PATH includes /opt/hermes/.venv/bin)
+#   - HERMES_HOME=/opt/data (a VOLUME, so we seed config here at RUNTIME)
+# =============================================================================
 set -e
 
-echo "🧠 Hermes Agent Starting..."
-echo "   Mode: Web UI"
-echo "   Port: ${PORT:-3000}"
-echo "   Honcho URL: ${HONCHO_BASE_URL:-not configured}"
+HERMES_HOME="${HERMES_HOME:-/opt/data}"
+PORT="${PORT:-3000}"
 
-# Create Hermes home directory structure if needed
-export HERMES_HOME="${HERMES_HOME:-/opt/data/.hermes}"
-mkdir -p "${HERMES_HOME}"
+echo "🧠 Hermes Agent (Web Dashboard) starting..."
+echo "   Port:        ${PORT}"
+echo "   Honcho URL:  ${HONCHO_BASE_URL:-<not set>}"
 
-# Write Honcho config dynamically from environment variables
-if [ -n "${HONCHO_BASE_URL}" ]; then
-  echo "📦 Configuring Honcho memory provider..."
-  cat > "${HERMES_HOME}/honcho.json" << EOF
-{
-  "baseUrl": "${HONCHO_BASE_URL}",
-  "token": "${HONCHO_AUTH_TOKEN:-}",
-  "appName": "${HONCHO_APP_NAME:-hermes-railway}"
-}
-EOF
-  echo "✅ Honcho config written to ${HERMES_HOME}/honcho.json"
-fi
-
-# Write .env file for Hermes from Railway environment variables
-cat > "${HERMES_HOME}/.env" << EOF
-OPENAI_API_KEY=${OPENAI_API_KEY:-}
-ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
-EOF
-
-echo "🚀 Starting Hermes Web UI..."
-
-# Start the web dashboard
-# Try different known start commands from upstream
-if [ -f "web/package.json" ]; then
-  cd web
-  exec npm run start -- --port "${PORT:-3000}" --host 0.0.0.0
-elif [ -f "run_agent.py" ]; then
-  exec python run_agent.py --web --port "${PORT:-3000}" --host 0.0.0.0
+# ---------------------------------------------------------------------------
+# 1. Select Honcho as the memory provider.
+#    /opt/data is a Docker VOLUME, so a config.yaml baked into the image would
+#    be shadowed at runtime — we must write it here on every boot.
+# ---------------------------------------------------------------------------
+if [ -f /opt/hermes/railway-config.yaml ]; then
+  cp /opt/hermes/railway-config.yaml "${HERMES_HOME}/config.yaml"
 else
-  echo "⚠️  Could not find Web UI entry point. Attempting npm start..."
-  exec npm start
+  printf 'memory:\n  provider: honcho\n' > "${HERMES_HOME}/config.yaml"
 fi
+echo "✅ Memory provider set to honcho (${HERMES_HOME}/config.yaml)"
+
+# ---------------------------------------------------------------------------
+# 2. Seed ~/.hermes/.env from provided environment variables.
+#    Hermes reads LLM keys and the Honcho connection from here / the env.
+#    (HONCHO_BASE_URL alone is enough for a self-hosted Honcho with auth off.)
+# ---------------------------------------------------------------------------
+ENV_FILE="${HERMES_HOME}/.env"
+: > "${ENV_FILE}"
+for var in OPENAI_API_KEY OPENAI_BASE_URL ANTHROPIC_API_KEY GOOGLE_API_KEY \
+           HONCHO_BASE_URL HONCHO_API_KEY HONCHO_ENVIRONMENT; do
+  eval val="\${$var:-}"
+  if [ -n "${val}" ]; then
+    echo "${var}=${val}" >> "${ENV_FILE}"
+  fi
+done
+echo "✅ Wrote ${ENV_FILE}"
+
+# ---------------------------------------------------------------------------
+# 3. Dashboard auth. A non-loopback (0.0.0.0) bind ALWAYS requires an auth
+#    provider since the June 2026 hardening — `--insecure` is a no-op now.
+#    Basic auth (username+password) or OAuth satisfies it.
+# ---------------------------------------------------------------------------
+if [ -n "${HERMES_DASHBOARD_BASIC_AUTH_USERNAME}" ] && \
+   { [ -n "${HERMES_DASHBOARD_BASIC_AUTH_PASSWORD}" ] || \
+     [ -n "${HERMES_DASHBOARD_BASIC_AUTH_PASSWORD_HASH}" ]; }; then
+  echo "🔐 Dashboard auth: basic (username/password)"
+elif [ -n "${HERMES_DASHBOARD_OAUTH_CLIENT_ID}" ]; then
+  echo "🔐 Dashboard auth: OAuth (Nous Portal)"
+else
+  echo "⚠️  No dashboard auth configured. A public (0.0.0.0) bind will REJECT"
+  echo "    requests. Set HERMES_DASHBOARD_BASIC_AUTH_USERNAME and"
+  echo "    HERMES_DASHBOARD_BASIC_AUTH_PASSWORD (or configure OAuth)."
+fi
+
+# ---------------------------------------------------------------------------
+# 4. Launch the dashboard. --skip-build serves the pre-built web_dist that
+#    ships in the image (no npm at runtime).
+# ---------------------------------------------------------------------------
+echo "🚀 hermes dashboard --host 0.0.0.0 --port ${PORT} --no-open --skip-build"
+exec hermes dashboard --host 0.0.0.0 --port "${PORT}" --no-open --skip-build

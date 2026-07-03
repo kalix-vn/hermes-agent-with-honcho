@@ -3,7 +3,9 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-healthcheckPath = "/"
+# /api/status is the auth-exempt liveness probe (works even on a public,
+# auth-gated bind); "/" would return 401 once dashboard auth is enabled.
+healthcheckPath = "/api/status"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 5

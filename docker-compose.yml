@@ -116,6 +116,10 @@ services:
       LLM_OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
       LLM_ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
       LLM_GEMINI_API_KEY: "${GOOGLE_API_KEY:-}"
+    # The deriver is a background worker — it serves no HTTP, so the API image's
+    # `curl /health` healthcheck can never pass. Disable it here.
+    healthcheck:
+      disable: true
     restart: unless-stopped
 
   # --------------------------------------------------------------------------
@@ -133,13 +137,28 @@ services:
       - "127.0.0.1:3000:3000"
     environment:
       PORT: "3000"
-      # Honcho connection (internal Docker network)
+      # Honcho connection (internal Docker network). For a self-hosted Honcho
+      # with auth disabled, the base URL alone is enough (no API key needed).
       HONCHO_BASE_URL: "http://honcho-api:8000"
-      HONCHO_APP_NAME: "hermes-local"
+      # Dashboard binds to 0.0.0.0 (reachable from the host), which REQUIRES an
+      # auth provider since the June 2026 hardening. Basic auth for local dev:
+      HERMES_DASHBOARD_BASIC_AUTH_USERNAME: "${HERMES_DASHBOARD_USERNAME:-admin}"
+      HERMES_DASHBOARD_BASIC_AUTH_PASSWORD: "${HERMES_DASHBOARD_PASSWORD:-hermes-local}"
+      HERMES_DASHBOARD_BASIC_AUTH_SECRET: "${HERMES_DASHBOARD_SECRET:-local-dev-session-secret-change-me}"
       # LLM Provider
       OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      OPENAI_BASE_URL: "${OPENAI_BASE_URL:-}"
       ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
       GOOGLE_API_KEY: "${GOOGLE_API_KEY:-}"
+    healthcheck:
+      # /api/status is the auth-exempt liveness probe. Use the venv python
+      # (guaranteed present) so we don't depend on curl being in the image.
+      test: ["CMD", "/opt/hermes/.venv/bin/python", "-c",
+             "import os,urllib.request; urllib.request.urlopen('http://localhost:'+os.environ.get('PORT','3000')+'/api/status').read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
     restart: unless-stopped
 
 volumes:

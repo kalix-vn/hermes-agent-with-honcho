@@ -189,6 +189,13 @@ AUTH_USE_AUTH=false
 LLM_OPENAI_API_KEY=  # REQUIRED — ask user to fill in
 ```
 
+> **Note on the database URL:** Honcho (SQLAlchemy) requires the
+> `postgresql+psycopg://` driver prefix, but Railway's `DATABASE_URL` uses the
+> bare `postgresql://` scheme. The container's entrypoint rewrites the scheme
+> automatically, so pasting `${{Postgres.DATABASE_URL}}` works as-is. (It also
+> falls back to `DATABASE_URL` / `REDIS_URL` if `DB_CONNECTION_URI` / `CACHE_URL`
+> are unset.)
+
 ### Step 5: Add Honcho Deriver Service
 
 1. Click **+ Add Service** → **GitHub Repo**
@@ -216,6 +223,11 @@ AUTH_USE_AUTH=false
 LLM_OPENAI_API_KEY=${{honcho-api.LLM_OPENAI_API_KEY}}
 ```
 
+> **Healthcheck:** The deriver is a background worker with no HTTP server —
+> leave its **Healthcheck Path empty** (Settings → Deploy). An HTTP healthcheck
+> would never pass and would fail the deploy. (The `honcho-api` service *can*
+> use `/health`.)
+
 ### Step 6: Add Hermes Agent Service
 
 1. Click **+ Add Service** → **GitHub Repo**
@@ -233,10 +245,23 @@ HONCHO_BASE_URL=http://${{honcho-api.RAILWAY_PRIVATE_DOMAIN}}:8000
 # LLM Provider (automatically reuses API key from honcho-api)
 OPENAI_API_KEY=${{honcho-api.LLM_OPENAI_API_KEY}}
 
+# Dashboard authentication — REQUIRED.
+# The dashboard is exposed on a public domain, and Hermes requires an auth
+# provider on any non-loopback bind (the old `--insecure` bypass is a no-op
+# since June 2026). Set a username + password:
+HERMES_DASHBOARD_BASIC_AUTH_USERNAME=admin
+HERMES_DASHBOARD_BASIC_AUTH_PASSWORD=<choose-a-strong-password>
+# Keeps login sessions valid across restarts (use 32+ random chars):
+HERMES_DASHBOARD_BASIC_AUTH_SECRET=<random-32-byte-secret>
+
 # (Optional) If you use an OpenAI-compatible provider (e.g., OpenRouter, DeepSeek, local vLLM)
 # Default is https://api.openai.com/v1 if left empty
 # OPENAI_BASE_URL=https://openrouter.ai/api/v1
 ```
+
+> **Note:** Without the `HERMES_DASHBOARD_BASIC_AUTH_*` variables the dashboard
+> will refuse requests on its public domain (you'll get an auth error), so set
+> them before deploying.
 
 ### Step 7: Configure Custom LLM Base URL (Optional)
 
@@ -271,12 +296,17 @@ If you wish to use an OpenAI-compatible provider (like **OpenRouter**, **DeepSee
 |----------|----------|---------|-------------|
 | `OPENAI_API_KEY` | ✅ | hermes | OpenAI API key for chat |
 | `LLM_OPENAI_API_KEY` | ✅ | honcho | OpenAI API key for memory extraction |
+| `HONCHO_BASE_URL` | ✅ | hermes | URL of the Honcho API service |
+| `HERMES_DASHBOARD_BASIC_AUTH_USERNAME` | ✅ | hermes | Dashboard login username (required for public bind) |
+| `HERMES_DASHBOARD_BASIC_AUTH_PASSWORD` | ✅ | hermes | Dashboard login password (required for public bind) |
+| `HERMES_DASHBOARD_BASIC_AUTH_SECRET` | ❌ | hermes | 32+ byte secret to keep sessions valid across restarts |
+| `DB_CONNECTION_URI` | ✅ | honcho | Postgres URL (scheme auto-normalized to `postgresql+psycopg://`) |
+| `CACHE_URL` | ✅ | honcho | Redis URL |
 | `ANTHROPIC_API_KEY` | ❌ | both | Anthropic API key |
 | `GOOGLE_API_KEY` | ❌ | both | Google Gemini API key |
 | `AUTH_USE_AUTH` | ❌ | honcho | Enable JWT auth (default: false) |
 | `AUTH_JWT_SECRET` | ❌ | honcho | JWT secret (required if auth enabled) |
 | `LOG_LEVEL` | ❌ | honcho | Log level: DEBUG, INFO, WARNING, ERROR |
-| `HONCHO_APP_NAME` | ❌ | hermes | App name for Honcho (default: hermes-railway) |
 
 ### Honcho Memory Features
 

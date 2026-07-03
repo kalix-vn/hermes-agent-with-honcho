@@ -3,7 +3,10 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-healthcheckPath = "/health"
-healthcheckTimeout = 300
+# NOTE: this file is shared by BOTH honcho services (api + deriver), because
+# both point at the `honcho/` root directory. The deriver is a background
+# worker that serves no HTTP, so we do NOT set healthcheckPath here — an HTTP
+# healthcheck would fail the deriver's deploy. For the API service, optionally
+# add `Healthcheck Path = /health` in its Railway service settings.
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 5

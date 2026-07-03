@@ -35,9 +35,17 @@ uv run uvicorn src.main:app --host 0.0.0.0 --port $PORT
 # Honcho Deriver Entrypoint (HONCHO_MODE=deriver)
 uv run python -m src.deriver
 
-# Hermes Web UI Entrypoint
-npm run start -- --port $PORT --host 0.0.0.0
+# Hermes Web Dashboard Entrypoint (built on the official image)
+hermes dashboard --host 0.0.0.0 --port $PORT --no-open --skip-build
 ```
+
+The Hermes service is built `FROM nousresearch/hermes-agent` (the official
+image, which already contains the pre-built web dashboard) rather than compiled
+from source. The dashboard serves an auth-gated UI on the public bind, so a
+`HERMES_DASHBOARD_BASIC_AUTH_USERNAME` / `HERMES_DASHBOARD_BASIC_AUTH_PASSWORD`
+pair (or OAuth) is required. Honcho requires the `postgresql+psycopg://` driver
+prefix, which the Honcho entrypoint derives automatically from Railway's
+`DATABASE_URL`.
 
 ## Why Deploy Hermes Agent + Honcho Memory on Railway?
 

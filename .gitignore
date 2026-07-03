@@ -6,6 +6,10 @@
 # Docker
 docker-compose.override.yml
 
+# Local-test-only proxy workarounds (never deployed; Railway uses the plain Dockerfiles)
+**/Dockerfile.localtest
+**/_localca.crt
+
 # OS
 .DS_Store
 Thumbs.db

@@ -1,71 +1,37 @@
 # ==============================================================================
-# Hermes Agent — Web UI Mode for Railway
+# Hermes Agent — Web Dashboard for Railway
 # ==============================================================================
-# Lightweight build focused on the Web UI dashboard only.
-# Based on upstream NousResearch/hermes-agent but stripped down
-# to avoid Playwright, desktop apps, and TUI dependencies.
+# Based on the OFFICIAL upstream image, which already ships:
+#   - the Python venv + all runtime deps (FastAPI/uvicorn "web" extra)
+#   - the pre-built web dashboard bundle (HERMES_WEB_DIST)
+#   - the s6-overlay supervisor + main-wrapper that routes the CMD to `hermes`
+#     and drops privileges to the non-root `hermes` user
+#
+# We only add what the upstream image intentionally leaves out:
+#   1. the Honcho SDK (lazy installs are disabled in the image), and
+#   2. a start script that seeds config from env and launches the dashboard.
 # ==============================================================================
+FROM nousresearch/hermes-agent:v2026.7.1
 
-FROM python:3.13-slim-bookworm AS python_base
+# ---------- Honcho memory provider dependency ----------
+# The image sets HERMES_DISABLE_LAZY_INSTALLS=1 and does NOT bundle the Honcho
+# SDK, so the honcho memory provider would fail on `from honcho import Honcho`.
+# Bake it into the venv (matches Hermes' own `honcho` extra pin). The venv is
+# uv-managed and has no pip, so install with uv.
+RUN uv pip install --python /opt/hermes/.venv/bin/python --no-cache "honcho-ai==2.0.1"
 
-# ---------- System dependencies ----------
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    ca-certificates \
-    curl \
-    git \
-    ripgrep \
-    && rm -rf /var/lib/apt/lists/*
+# ---------- Config + start script ----------
+# /opt/data is a VOLUME, so config.yaml is seeded at runtime by the start
+# script (see entrypoint.sh) — we stage the canonical copy outside the volume.
+COPY config.yaml /opt/hermes/railway-config.yaml
+COPY entrypoint.sh /opt/hermes/railway-entrypoint.sh
+RUN chmod +x /opt/hermes/railway-entrypoint.sh
 
-# ---------- Install uv ----------
-COPY --from=ghcr.io/astral-sh/uv:0.11.6 /usr/local/bin/uv /usr/local/bin/uvx /usr/local/bin/
-
-# ---------- Install Node.js 22 LTS ----------
-COPY --from=node:22-bookworm-slim /usr/local/bin/node /usr/local/bin/
-COPY --from=node:22-bookworm-slim /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
-RUN ln -sf /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm && \
-    ln -sf /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
-
-# ---------- Clone Hermes Agent source ----------
-ARG HERMES_VERSION=main
-WORKDIR /opt/hermes
-RUN git clone --depth 1 --branch ${HERMES_VERSION} \
-    https://github.com/NousResearch/hermes-agent.git /opt/hermes && \
-    rm -rf /opt/hermes/.git
-
-# ---------- Python dependencies ----------
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# Install Python deps with uv
-RUN uv sync --frozen --no-group dev 2>/dev/null || \
-    uv pip install -r requirements.txt 2>/dev/null || \
-    pip install -e . 2>/dev/null || \
-    echo "Python deps installed via fallback"
-
-# ---------- Web UI dependencies ----------
-WORKDIR /opt/hermes
-ENV npm_config_install_links=false
-RUN npm install --prefer-offline --no-audit 2>/dev/null || true
-RUN cd web && npm install --prefer-offline --no-audit 2>/dev/null || true
-
-# ---------- Create non-root user ----------
-RUN useradd -u 10000 -m -d /opt/data hermes
-RUN mkdir -p /opt/data/.hermes && chown -R hermes:hermes /opt/data
-
-# ---------- Copy config and entrypoint ----------
-COPY config.yaml /opt/data/.hermes/config.yaml
-COPY entrypoint.sh /opt/hermes/entrypoint.sh
-RUN chmod +x /opt/hermes/entrypoint.sh
-
-# ---------- Runtime ----------
+# Default port (Railway overrides via $PORT).
 ENV PORT=3000
-EXPOSE ${PORT}
+EXPOSE 3000
 
-HEALTHCHECK --interval=15s --timeout=5s --retries=5 --start-period=30s \
-    CMD curl -f http://localhost:${PORT}/ || exit 1
-
-USER hermes
-WORKDIR /opt/hermes
-
-ENTRYPOINT ["/opt/hermes/entrypoint.sh"]
+# Keep the image's ENTRYPOINT ["/init", ".../main-wrapper.sh"] intact so
+# s6 init + privilege-drop still run. main-wrapper treats an executable CMD[0]
+# as a bare command and execs it as the hermes user with the venv active.
+CMD ["/opt/hermes/railway-entrypoint.sh"]
