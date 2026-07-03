@@ -20,6 +20,22 @@ FROM nousresearch/hermes-agent:v2026.7.1
 # uv-managed and has no pip, so install with uv.
 RUN uv pip install --python /opt/hermes/.venv/bin/python --no-cache "honcho-ai==2.0.1"
 
+# ---------- Patch: basic-auth login is broken by the auto-SSO redirect ----------
+# In v2026.7.1 the dashboard's unauthenticated-HTML gate calls _auto_sso_response,
+# which — when exactly ONE session provider is registered — auto-redirects the
+# browser to /auth/login?provider=<name> (the OAuth PKCE initiation route). But
+# BasicAuthProvider is password-only: its start_login() raises NotImplementedError,
+# so every page load 500s and the dashboard is unreachable. The auto-SSO path is
+# only meant for OAuth providers, yet it never excludes password providers
+# (supports_password=True). We filter them out so a basic-auth-only setup falls
+# through to the /login interstitial, which renders the password form that POSTs
+# to /auth/password-login. The `grep` fails the build if a future image bump
+# moves the line, so this patch can never silently become a no-op.
+RUN F=/opt/hermes/hermes_cli/dashboard_auth/middleware.py && \
+    sed -i 's|^    providers = list_session_providers()$|    providers = [p for p in list_session_providers() if not getattr(p, "supports_password", False)]|' "$F" && \
+    grep -qF 'if not getattr(p, "supports_password", False)' "$F" || \
+    (echo "AUTO-SSO PATCH FAILED — middleware.py changed upstream; re-check the patch" && exit 1)
+
 # ---------- Config + start script ----------
 # /opt/data is a VOLUME, so config.yaml is seeded at runtime by the start
 # script (see entrypoint.sh) — we stage the canonical copy outside the volume.
