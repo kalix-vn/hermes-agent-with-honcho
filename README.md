@@ -192,6 +192,21 @@ Mark **`LLM_OPENAI_API_KEY`** (on `honcho-api`) as **Required**. Because the oth
 
 </details>
 
+### 🌐 Public access (expose to the internet)
+
+By default every Railway service is only reachable on the project's **private network**. To let people open the Hermes dashboard from a browser, give the **`hermes`** service a public URL:
+
+1. Open the **hermes** service → **Settings → Networking**.
+2. Under **Public Networking**, click **Generate Domain**. Railway creates a free `https://<name>.up.railway.app` address with HTTPS handled for you.
+3. If asked for a port, enter **`3000`** (the dashboard's `PORT`). Railway routes external `:443` → your container's `:3000`.
+4. Open the generated URL and log in with your `HERMES_DASHBOARD_BASIC_AUTH_USERNAME` / `PASSWORD`.
+
+**Custom domain:** in the same panel pick **Custom Domain**, enter e.g. `chat.yourdomain.com`, then add the **CNAME** record it shows you at your DNS provider. Railway issues the TLS certificate automatically.
+
+> 🔒 **Only expose Hermes.** Do **not** generate a domain for `honcho-api`, `honcho-deriver`, Postgres, or Redis. Hermes reaches Honcho over the **private** network (`${{honcho-api.RAILWAY_PRIVATE_DOMAIN}}`), so the memory API and databases should stay internal. If you genuinely need the Honcho API public (e.g. external SDK clients), generate its domain on port `8000` **and** enable `AUTH_USE_AUTH=true` with JWT keys first.
+
+> ⚠️ **Public = a login is mandatory.** A public domain makes the dashboard reachable by anyone on the internet, so the `HERMES_DASHBOARD_BASIC_AUTH_*` credentials must be set (see the deploy note above).
+
 ### 🔧 Configuration — environment variables
 
 | Variable | Required | Service | Description |
@@ -358,6 +373,21 @@ Muốn dùng nhà cung cấp tương thích OpenAI (OpenRouter, DeepSeek, Togeth
 ```
 
 </details>
+
+### 🌐 Mở ra Internet (public access)
+
+Mặc định mọi service trên Railway chỉ truy cập được trong **mạng nội bộ** của project. Muốn người dùng mở dashboard Hermes từ trình duyệt, hãy cấp cho service **`hermes`** một URL công khai:
+
+1. Mở service **hermes** → **Settings → Networking**.
+2. Ở mục **Public Networking**, bấm **Generate Domain**. Railway tạo miễn phí một địa chỉ `https://<tên>.up.railway.app`, tự lo HTTPS luôn.
+3. Nếu bị hỏi cổng, nhập **`3000`** (chính là `PORT` của dashboard). Railway sẽ route `:443` bên ngoài → `:3000` trong container.
+4. Mở URL vừa tạo và đăng nhập bằng `HERMES_DASHBOARD_BASIC_AUTH_USERNAME` / `PASSWORD` của bạn.
+
+**Domain riêng:** cũng ở panel đó chọn **Custom Domain**, nhập ví dụ `chat.tenmien.com`, rồi thêm bản ghi **CNAME** mà Railway hiển thị vào nhà cung cấp DNS của bạn. Railway tự cấp chứng chỉ TLS.
+
+> 🔒 **Chỉ mở mỗi Hermes.** **Đừng** Generate Domain cho `honcho-api`, `honcho-deriver`, Postgres hay Redis. Hermes gọi Honcho qua **mạng nội bộ** (`${{honcho-api.RAILWAY_PRIVATE_DOMAIN}}`), nên API bộ nhớ và database cứ để private là an toàn nhất. Nếu thật sự cần Honcho API public (vd. client SDK bên ngoài), hãy Generate Domain ở cổng `8000` **và** bật `AUTH_USE_AUTH=true` kèm khóa JWT trước.
+
+> ⚠️ **Public = bắt buộc có đăng nhập.** Domain công khai khiến bất kỳ ai trên Internet cũng vào được dashboard, nên **bắt buộc** phải đặt bộ `HERMES_DASHBOARD_BASIC_AUTH_*` (xem lưu ý ở phần deploy phía trên).
 
 ### 🔧 Cấu hình — biến môi trường
 
