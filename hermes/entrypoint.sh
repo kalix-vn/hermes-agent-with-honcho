@@ -53,6 +53,16 @@ if [ -n "${HERMES_DASHBOARD_BASIC_AUTH_USERNAME}" ] && \
    { [ -n "${HERMES_DASHBOARD_BASIC_AUTH_PASSWORD}" ] || \
      [ -n "${HERMES_DASHBOARD_BASIC_AUTH_PASSWORD_HASH}" ]; }; then
   echo "🔐 Dashboard auth: basic (username/password)"
+  # Masked fingerprint of the credentials the container ACTUALLY sees, so a
+  # login mismatch (surrounding quotes, stray whitespace, or an env-var edit
+  # that was never redeployed) is diagnosable from the logs WITHOUT leaking
+  # the secret. Prints only the byte length + an 8-hex SHA-256 prefix.
+  if [ -n "${HERMES_DASHBOARD_BASIC_AUTH_PASSWORD}" ]; then
+    _pw_fp=$(printf '%s' "${HERMES_DASHBOARD_BASIC_AUTH_PASSWORD}" | \
+      python -c 'import sys,hashlib;d=sys.stdin.buffer.read();print("len=%d sha8=%s"%(len(d),hashlib.sha256(d).hexdigest()[:8]))' 2>/dev/null)
+    echo "   ↳ user='${HERMES_DASHBOARD_BASIC_AUTH_USERNAME}'  password ${_pw_fp:-<fingerprint unavailable>}"
+    echo "     (compare: the intended password's own len/sha8 must match exactly)"
+  fi
 elif [ -n "${HERMES_DASHBOARD_OAUTH_CLIENT_ID}" ]; then
   echo "🔐 Dashboard auth: OAuth (Nous Portal)"
 else
