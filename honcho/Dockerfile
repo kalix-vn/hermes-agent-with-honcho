@@ -21,11 +21,11 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Install dependencies using uv (cached layer)
-RUN --mount=type=cache,target=/root/.cache/uv \
+RUN --mount=type=cache,id=uv,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-group dev
 
 # Install the project itself
-RUN --mount=type=cache,target=/root/.cache/uv \
+RUN --mount=type=cache,id=uv,target=/root/.cache/uv \
     uv sync --frozen --no-group dev
 
 # --------------- Runtime stage ---------------
