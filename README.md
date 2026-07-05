@@ -57,6 +57,10 @@
 
 <a id="english"></a>
 
+<details>
+<summary><b>🇬🇧 Click to expand English documentation (Nhấp để mở tài liệu Tiếng Anh)</b></summary>
+<br>
+
 ## 🇬🇧 English
 
 ### What is this?
@@ -235,9 +239,15 @@ Once deployed, Hermes uses Honcho for:
 
 See the [Honcho feature docs](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/features/honcho.md).
 
+</details>
+
 ---
 
 <a id="tieng-viet"></a>
+
+<details>
+<summary><b>🇻🇳 Bấm để xem hướng dẫn bằng Tiếng Việt (Click to expand Vietnamese documentation)</b></summary>
+<br>
 
 ## 🇻🇳 Tiếng Việt
 
@@ -416,6 +426,8 @@ Sau khi triển khai, Hermes dùng Honcho để:
 - **Tóm tắt phiên** — bơm ngữ cảnh để giữ mạch liên tục.
 
 Xem thêm [tài liệu tính năng Honcho](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/features/honcho.md).
+
+</details>
 
 ---
 
