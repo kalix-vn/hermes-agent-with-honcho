@@ -88,7 +88,7 @@ You'll be prompted for:
 
 ```bash
 # 1. Clone
-git clone https://github.com/kalix-vn/hermes-agent-with-honcho.git
+git clone https://github.com/Avanix-AI/hermes-agent-with-honcho.git
 cd hermes-agent-with-honcho
 
 # 2. Configure (at minimum set OPENAI_API_KEY)
@@ -270,7 +270,7 @@ Bạn sẽ được yêu cầu nhập:
 
 ```bash
 # 1. Clone
-git clone https://github.com/kalix-vn/hermes-agent-with-honcho.git
+git clone https://github.com/Avanix-AI/hermes-agent-with-honcho.git
 cd hermes-agent-with-honcho
 
 # 2. Cấu hình (tối thiểu đặt OPENAI_API_KEY)

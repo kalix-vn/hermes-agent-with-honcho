@@ -105,7 +105,7 @@ Symbols:
 
 ## 🛠️ Source material & references
 
-- Deployment repo (this course follows it closely): [`kalix-vn/hermes-agent-with-honcho`](https://github.com/kalix-vn/hermes-agent-with-honcho)
+- Deployment repo (this course follows it closely): [`Avanix-AI/hermes-agent-with-honcho`](https://github.com/Avanix-AI/hermes-agent-with-honcho)
 - Hermes Agent (NousResearch): <https://github.com/NousResearch/hermes-agent>
 - Honcho (Plastic Labs): <https://github.com/plastic-labs/honcho> · <https://honcho.dev>
 - Honcho integration docs in Hermes: [features/honcho.md](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/features/honcho.md)

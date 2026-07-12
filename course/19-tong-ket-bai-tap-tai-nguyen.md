@@ -73,7 +73,7 @@ trộn hồ sơ**. **Nộp:** minh chứng mỗi người được trả lời t
 
 ## 📚 Tài nguyên đi xa hơn
 
-- **Repo khóa học:** [`kalix-vn/hermes-agent-with-honcho`](https://github.com/kalix-vn/hermes-agent-with-honcho) — đọc `README.md`, `docker-compose.yml`, `hermes/`, `honcho/`.
+- **Repo khóa học:** [`Avanix-AI/hermes-agent-with-honcho`](https://github.com/Avanix-AI/hermes-agent-with-honcho) — đọc `README.md`, `docker-compose.yml`, `hermes/`, `honcho/`.
 - **Hermes Agent:** <https://github.com/NousResearch/hermes-agent>
 - **Tài liệu tích hợp Honcho (Hermes):** [features/honcho.md](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/features/honcho.md)
 - **Honcho (Plastic Labs):** <https://github.com/plastic-labs/honcho> · <https://honcho.dev>

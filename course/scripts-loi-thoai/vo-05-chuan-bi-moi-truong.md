@@ -87,11 +87,11 @@ cần cài app Telegram trên điện thoại hoặc máy tính và đăng nhậ
 ## [05:40] BƯỚC 5 — Clone repo về máy
 
 【THAO TÁC: mở terminal, gõ lệnh git clone】
-【MÀN HÌNH: `git clone https://github.com/kalix-vn/hermes-agent-with-honcho.git` rồi `cd hermes-agent-with-honcho`】
+【MÀN HÌNH: `git clone https://github.com/Avanix-AI/hermes-agent-with-honcho.git` rồi `cd hermes-agent-with-honcho`】
 
 〔Đọc〕
 "Bước năm: kéo repo về máy. Mình mở terminal và gõ:
-`git clone`, rồi địa chỉ repo, `github.com/kalix-vn/hermes-agent-with-honcho`. Xong thì `cd` vào
+`git clone`, rồi địa chỉ repo, `github.com/Avanix-AI/hermes-agent-with-honcho`. Xong thì `cd` vào
 thư mục vừa tải về.
 
 _(chờ clone xong)_

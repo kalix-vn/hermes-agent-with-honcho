@@ -60,7 +60,7 @@ chỉ cần nhập **một lần**, các service khác tham chiếu lại."
 
 **Lệnh:**
 ```bash
-git clone https://github.com/kalix-vn/hermes-agent-with-honcho.git
+git clone https://github.com/Avanix-AI/hermes-agent-with-honcho.git
 cd hermes-agent-with-honcho
 ```
 

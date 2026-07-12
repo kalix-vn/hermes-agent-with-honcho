@@ -101,7 +101,7 @@ Ký hiệu:
 
 ## 🛠️ Tài liệu gốc & nguồn tham khảo
 
-- Repo triển khai (chính khóa học này bám theo): [`kalix-vn/hermes-agent-with-honcho`](https://github.com/kalix-vn/hermes-agent-with-honcho)
+- Repo triển khai (chính khóa học này bám theo): [`Avanix-AI/hermes-agent-with-honcho`](https://github.com/Avanix-AI/hermes-agent-with-honcho)
 - Hermes Agent (NousResearch): <https://github.com/NousResearch/hermes-agent>
 - Honcho (Plastic Labs): <https://github.com/plastic-labs/honcho> · <https://honcho.dev>
 - Tài liệu tích hợp Honcho trong Hermes: [features/honcho.md](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/features/honcho.md)

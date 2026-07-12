@@ -75,7 +75,7 @@ profiles**. **Submit:** proof that each person is answered according to their ow
 
 ## 📚 Resources for going further
 
-- **Course repo:** [`kalix-vn/hermes-agent-with-honcho`](https://github.com/kalix-vn/hermes-agent-with-honcho) — read `README.md`, `docker-compose.yml`, `hermes/`, `honcho/`.
+- **Course repo:** [`Avanix-AI/hermes-agent-with-honcho`](https://github.com/Avanix-AI/hermes-agent-with-honcho) — read `README.md`, `docker-compose.yml`, `hermes/`, `honcho/`.
 - **Hermes Agent:** <https://github.com/NousResearch/hermes-agent>
 - **Honcho integration docs (Hermes):** [features/honcho.md](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/features/honcho.md)
 - **Honcho (Plastic Labs):** <https://github.com/plastic-labs/honcho> · <https://honcho.dev>

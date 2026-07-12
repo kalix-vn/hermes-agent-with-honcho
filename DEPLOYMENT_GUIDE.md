@@ -1,6 +1,6 @@
 # Deploy and Host Hermes Agent + Honcho Memory on Railway
 
-[Hermes Agent + Honcho Memory](https://github.com/kalix-vn/hermes-agent-with-honcho) is an advanced AI agent system featuring a self-hosted cognitive architecture. Combining the tool-calling power of Hermes with Honcho's dialectic reasoning engine, it constructs a persistent, evolving user profile that summarizes sessions, reconciles conversations, and delivers a deeply personalized, contextual AI experience.
+[Hermes Agent + Honcho Memory](https://github.com/Avanix-AI/hermes-agent-with-honcho) is an advanced AI agent system featuring a self-hosted cognitive architecture. Combining the tool-calling power of Hermes with Honcho's dialectic reasoning engine, it constructs a persistent, evolving user profile that summarizes sessions, reconciles conversations, and delivers a deeply personalized, contextual AI experience.
 
 ## About Hosting Hermes Agent + Honcho Memory
 
