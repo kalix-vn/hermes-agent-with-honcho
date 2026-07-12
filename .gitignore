@@ -34,3 +34,6 @@ venv/
 # Logs
 *.log
 logs/
+
+# Raw source transcript (not part of the deliverable)
+plan.md
